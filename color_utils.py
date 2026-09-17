@@ -2,17 +2,10 @@
 
 import colorsys
 import math
-
-import numpy as np
 from PIL import Image
 
 # Ángulos de matiz (en grados) que tradicionalmente combinan bien en teoría
 # del color, con un puntaje base de qué tan agradable resulta cada relación.
-# Antes esto se evaluaba con umbrales "todo o nada" (p. ej. 61° de distancia
-# caía de golpe en la categoría "disonante" con puntaje 0.35, mientras que
-# 60° tenía 0.9): eso generaba outfits descartados injustamente por un grado
-# de diferencia. Ahora se usa una campana suave alrededor de cada ángulo, así
-# que la nota baja gradualmente en vez de con saltos bruscos.
 _ANGULOS_ARMONICOS = (
     (0, "monocromático", 0.92),
     (30, "análogo", 0.86),
@@ -34,21 +27,29 @@ def extraer_paleta(ruta_imagen: str, num_colores: int = 5):
     img = Image.open(ruta_imagen).convert("RGBA")
     img.thumbnail((150, 150))
 
-    datos = np.array(img)
-    alfa = datos[:, :, 3]
-    pixeles_prenda = datos[alfa > 10][:, :3]
+    # Filtramos píxeles transparentes sin NumPy
+    pixeles_prenda = []
+    for r, g, b, a in img.getdata():
+        if a > 10:
+            pixeles_prenda.append((r, g, b))
 
-    if len(pixeles_prenda) == 0:
-        pixeles_prenda = datos[:, :, :3].reshape(-1, 3)
+    if not pixeles_prenda:
+        # Si todo es transparente, tomamos todos los píxeles en RGB
+        img_rgb = img.convert("RGB")
+        pixeles_prenda = list(img_rgb.getdata())
 
-    # Mantiene únicamente los píxeles de la prenda. Rellenar una cuadrícula
-    # con ceros introducía negro artificial en fotos con fondo transparente.
-    img_compacta = Image.fromarray(pixeles_prenda.reshape(-1, 1, 3), mode="RGB")
+    # Para cuantizar, creamos una imagen temporal con los píxeles filtrados
+    # Usamos una imagen de 1xN para pasarla por quantize
+    img_compacta = Image.new("RGB", (1, len(pixeles_prenda)))
+    img_compacta.putdata(pixeles_prenda)
 
     img_cuantizada = img_compacta.quantize(colors=min(num_colores, 256), method=Image.MEDIANCUT)
     paleta = img_cuantizada.getpalette()
     conteo = img_cuantizada.getcolors()
-    conteo.sort(key=lambda x: x[0], reverse=True)
+    if conteo:
+        conteo.sort(key=lambda x: x[0], reverse=True)
+    else:
+        return []
 
     colores = []
     for _, indice in conteo:
@@ -62,7 +63,8 @@ def extraer_paleta(ruta_imagen: str, num_colores: int = 5):
 
 def color_dominante(ruta_imagen: str):
     """Devuelve el color RGB más dominante de la prenda."""
-    return extraer_paleta(ruta_imagen, num_colores=5)[0]
+    paleta = extraer_paleta(ruta_imagen, num_colores=5)
+    return paleta[0] if paleta else (255, 255, 255)
 
 
 def rgb_a_hsv(color_rgb):
@@ -84,8 +86,7 @@ def distancia_de_matiz(color1, color2):
 
 def _puntaje_por_distancia(distancia):
     """Puntaje continuo (0-1): qué tan cerca está `distancia` de alguno de
-    los ángulos armónicos conocidos, con una campana de Gauss alrededor de
-    cada uno en vez de un corte abrupto entre categorías."""
+    los ángulos armónicos conocidos."""
     mejor_etiqueta = "disonante"
     mejor_puntaje = 0.0
     for angulo, etiqueta, base in _ANGULOS_ARMONICOS:
@@ -101,14 +102,7 @@ def _puntaje_por_distancia(distancia):
 
 
 def clasificar_armonia(color1, color2):
-    """Clasifica la relación cromática entre dos colores.
-
-    Devuelve (etiqueta, puntaje), con puntaje de 0 a 1 (1 = combinan muy
-    bien, 0 = combinan mal). Además de la distancia de matiz, ahora también
-    se tiene en cuenta qué tan parecidos son en saturación y brillo: dos
-    colores con el matiz "correcto" pero uno muy apagado y otro muy vivo se
-    penalizan apenas, en vez de tratarse igual que un match perfecto.
-    """
+    """Clasifica la relación cromática entre dos colores."""
     h1, s1, v1 = rgb_a_hsv(color1)
     h2, s2, v2 = rgb_a_hsv(color2)
 
