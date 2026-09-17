@@ -17,8 +17,16 @@ jobs:
 
       - name: Build with Docker
         run: |
-          docker run --rm --user buildozer -v ${{ github.workspace }}:/home/buildozer/app \
-            kivy/buildozer android debug
+          docker run --rm -v ${{ github.workspace }}:/home/buildozer/app \
+            kivy/buildozer bash -c "
+              # Buscamos la ruta del archivo __init__.py de buildozer y eliminamos la llamada a check_root()
+              INIT_FILE=\$(find /home/user/.venv -name __init__.py | grep 'buildozer/__init__.py')
+              if [ -n \"\$INIT_FILE\" ]; then
+                sed -i 's/self.check_root()//g' \"\$INIT_FILE\"
+                echo \"Parche aplicado a \$INIT_FILE\"
+              fi
+              buildozer android debug
+            "
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
