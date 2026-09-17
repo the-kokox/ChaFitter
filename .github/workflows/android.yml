@@ -15,60 +15,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install System Dependencies
+      - name: Build with Docker
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            git \
-            python3-dev \
-            ffmpeg \
-            libsdl2-dev \
-            libsdl2-image-dev \
-            libsdl2-mixer-dev \
-            libsdl2-ttf-dev \
-            libportmidi-dev \
-            libswscale-dev \
-            libavformat-dev \
-            libavcodec-dev \
-            zlib1g-dev \
-            libgstreamer1.0-dev \
-            gstreamer1.0-plugins-base \
-            gstreamer1.0-plugins-good \
-            libffi-dev \
-            libssl-dev \
-            libbz2-dev \
-            libsqlite3-dev \
-            libreadline-dev \
-            liblzma-dev \
-            openjdk-17-jdk \
-            cmake \
-            pkg-config \
-            autoconf \
-            automake \
-            libtool \
-            m4
-
-      - name: Install Python Build Tools
-        run: |
-          pip install --user --upgrade pip
-          pip install --user cython==0.29.36 setuptools wheel
-          # Instalamos buildozer y python-for-android desde la rama master para compatibilidad con NDK r27
-          pip install --user git+https://github.com/kivy/buildozer.git
-          pip install --user git+https://github.com/kivy/python-for-android.git
-
-      - name: Build with Buildozer
-        run: |
-          export PATH=$PATH:~/.local/bin
-          # Forzamos la versión de Cython para evitar incompatibilidades en las recetas
-          export CYTHON_VERSION=0.29.36
-          # Ejecutamos la compilación. Usamos el modo debug para obtener más info si falla.
-          buildozer -v android debug
+          docker run --rm -v ${{ github.workspace }}:/home/buildozer/app \
+            kivy/buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
