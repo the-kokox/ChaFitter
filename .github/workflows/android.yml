@@ -28,7 +28,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.11'
 
       - name: Install System Dependencies
         run: |
@@ -59,7 +59,7 @@ jobs:
             liblzma-dev \
             autotools-dev \
             m4 \
-            openjdk-11-jdk \
+            openjdk-17-jdk \
             cmake \
             pkg-config \
             autoconf \
@@ -75,15 +75,17 @@ jobs:
 
       - name: Install Python Build Tools
         run: |
-          python -m pip install --upgrade pip==23.0.1 setuptools==65.5.0 wheel
-          python -m pip install buildozer cython==0.29.33
+          python -m pip install --upgrade pip==23.2.1 setuptools==68.0.0 wheel
+          python -m pip install buildozer cython==0.29.36
 
       - name: Build with Buildozer
         run: |
           unset ANDROID_NDK
           unset ANDROID_NDK_HOME
+          unset ANDROID_NDK_ROOT
           export PATH=$PATH:~/.local/bin
           export PIP_BREAK_SYSTEM_PACKAGES=1
+          export PIP_USER=1
           export PIP_NO_BUILD_ISOLATION=1
           buildozer -v android debug
 
