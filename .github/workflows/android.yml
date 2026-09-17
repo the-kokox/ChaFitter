@@ -70,6 +70,8 @@ jobs:
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:~/.local/bin
+          export PIP_BREAK_SYSTEM_PACKAGES=1
+          export PIP_USER=1
           buildozer -v android debug
 
       - name: Upload APK
