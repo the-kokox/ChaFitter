@@ -55,6 +55,13 @@ jobs:
             automake \
             libtool
 
+      - name: Fix libtool macro error
+        run: |
+          # Solución definitiva para el error LT_SYS_SYMBOL_USCORE
+          # Creamos una macro vacía para que autoconf no falle al compilar libffi
+          sudo mkdir -p /usr/share/aclocal
+          echo "macro(LT_SYS_SYMBOL_USCORE([s]) dnl" | sudo tee /usr/share/aclocal/lt_sys_symbol_uscore.m4
+
       - name: Install Python Build Tools
         run: |
           pip install --user --upgrade pip
@@ -63,7 +70,6 @@ jobs:
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:~/.local/bin
-          # Ejecutamos la compilación directamente en el runner (que no es root)
           buildozer -v android debug
 
       - name: Upload APK
