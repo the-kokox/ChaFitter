@@ -16,10 +16,10 @@ orientation = portrait
 fullscreen = 0
 
 # Configuración de API y arquitectura Android
-android.api = 33
+android.api = 31
 android.minapi = 24
 android.archs = arm64-v8a
-android.ndk = 25b
+android.ndk = 23b
 android.accept_sdk_license = True
 
 [buildozer]
