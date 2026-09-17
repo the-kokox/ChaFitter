@@ -53,15 +53,19 @@ jobs:
             automake \
             libtool
 
-      - name: Install Python Build Tools
+      - name: Install Build Tools from Git
         run: |
           pip install --user --upgrade pip
-          pip install --user buildozer cython==0.29.36 setuptools wheel
+          pip install --user cython==0.29.36 setuptools wheel
+          # Instalamos buildozer y python-for-android desde el código más reciente (master)
+          # Esto es fundamental para que sea compatible con el NDK r27 de GitHub
+          pip install --user git+https://github.com/kivy/buildozer.git
+          pip install --user git+https://github.com/kivy/python-for-android.git
 
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:~/.local/bin
-          # Forzamos el uso de la versión de Cython instalada
+          # Forzamos la versión de Cython
           export CYTHON_VERSION=0.29.36
           buildozer -v android debug
 
