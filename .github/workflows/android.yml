@@ -41,6 +41,11 @@ jobs:
             gstreamer1.0-plugins-base \
             gstreamer1.0-plugins-good \
             libffi-dev \
+            libssl-dev \
+            libbz2-dev \
+            libsqlite3-dev \
+            libreadline-dev \
+            liblzma-dev \
             openjdk-17-jdk \
             cmake \
             pkg-config \
@@ -56,7 +61,8 @@ jobs:
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:~/.local/bin
-          # Eliminamos la limpieza ya que el entorno de GitHub ya es limpio por defecto
+          # Forzamos el uso de la versión de Cython instalada
+          export CYTHON_VERSION=0.29.36
           buildozer -v android debug
 
       - name: Upload APK
