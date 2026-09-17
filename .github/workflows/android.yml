@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Dependencies
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -41,15 +41,23 @@ jobs:
             gstreamer1.0-plugins-base \
             gstreamer1.0-plugins-good \
             libffi-dev \
-            openjdk-17-jdk
+            openjdk-17-jdk \
+            cmake \
+            pkg-config \
+            autoconf \
+            automake \
+            libtool
 
-      - name: Install Buildozer
+      - name: Install Python Build Tools
         run: |
-          pip install --user buildozer cython
+          pip install --user --upgrade pip
+          pip install --user cython==0.29.36 setuptools wheel
 
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:~/.local/bin
+          # Limpiamos cualquier rastro previo para evitar conflictos
+          buildozer android clean
           buildozer -v android debug
 
       - name: Upload APK
