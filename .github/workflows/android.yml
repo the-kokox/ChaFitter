@@ -51,7 +51,7 @@ jobs:
       - name: Install Python Build Tools
         run: |
           pip install --user --upgrade pip
-          pip install --user cython==0.29.36 setuptools wheel
+          pip install --user buildozer cython==0.29.36 setuptools wheel
 
       - name: Build with Buildozer
         run: |
