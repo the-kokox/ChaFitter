@@ -56,8 +56,7 @@ jobs:
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:~/.local/bin
-          # Limpiamos cualquier rastro previo para evitar conflictos
-          buildozer android clean
+          # Eliminamos la limpieza ya que el entorno de GitHub ya es limpio por defecto
           buildozer -v android debug
 
       - name: Upload APK
