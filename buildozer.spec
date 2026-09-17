@@ -7,7 +7,7 @@ source.dir = .
 source.include_exts = py,png,jpg,jpeg,kv,atlas,ttf,json
 
 version = 0.1
-requirements = python3,kivy
+requirements = python3.11,kivy
 
 # Permisos necesarios en Android: cámara y lectura de imágenes para Android 13+
 android.permissions = CAMERA,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,READ_MEDIA_IMAGES
