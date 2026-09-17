@@ -15,18 +15,56 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build with Docker
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install System Dependencies
         run: |
-          docker run --rm -v ${{ github.workspace }}:/home/buildozer/app \
-            kivy/buildozer bash -c "
-              # Buscamos la ruta del archivo __init__.py de buildozer y eliminamos la llamada a check_root()
-              INIT_FILE=\$(find /home/user/.venv -name __init__.py | grep 'buildozer/__init__.py')
-              if [ -n \"\$INIT_FILE\" ]; then
-                sed -i 's/self.check_root()//g' \"\$INIT_FILE\"
-                echo \"Parche aplicado a \$INIT_FILE\"
-              fi
-              buildozer android debug
-            "
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            git \
+            python3-dev \
+            ffmpeg \
+            libsdl2-dev \
+            libsdl2-image-dev \
+            libsdl2-mixer-dev \
+            libsdl2-ttf-dev \
+            libportmidi-dev \
+            libswscale-dev \
+            libavformat-dev \
+            libavcodec-dev \
+            zlib1g-dev \
+            libgstreamer1.0-dev \
+            gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good \
+            libffi-dev \
+            libssl-dev \
+            libbz2-dev \
+            libsqlite3-dev \
+            libreadline-dev \
+            liblzma-dev \
+            autotools-dev \
+            m4 \
+            openjdk-17-jdk \
+            cmake \
+            pkg-config \
+            autoconf \
+            automake \
+            libtool
+
+      - name: Install Python Build Tools
+        run: |
+          pip install --user --upgrade pip
+          pip install --user buildozer cython==0.29.36 setuptools wheel
+
+      - name: Build with Buildozer
+        run: |
+          export PATH=$PATH:~/.local/bin
+          # Ejecutamos la compilación directamente en el runner (que no es root)
+          buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
