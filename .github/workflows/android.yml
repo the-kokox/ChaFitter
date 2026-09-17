@@ -75,8 +75,7 @@ jobs:
 
       - name: Install Python Build Tools
         run: |
-          curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-          python get-pip.py pip==23.3.1 setuptools==68.0.0 wheel
+          python -m pip install --upgrade pip==23.0.1 setuptools==65.5.0 wheel
           python -m pip install buildozer cython==0.29.36
 
       - name: Build with Buildozer
